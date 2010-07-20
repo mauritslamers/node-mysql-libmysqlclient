@@ -49,6 +49,12 @@ return ThrowException(Exception::TypeError( \
 String::New("Argument " #I " invalid"))); \
 Local<External> VAR = Local<External>::Cast(args[I]);
 
+#define REQ_BOOL_ARG(I, VAR) \
+if (args.Length() <= (I) || !args[I]->IsBoolean()) \
+return ThrowException(Exception::TypeError( \
+String::New("Argument " #I " must be a boolean"))); \
+Local<Boolean> VAR = args[I]->ToBoolean();
+
 #define MYSQLSYNC_STORE_RESULT 0
 #define MYSQLSYNC_USE_RESULT   1
 
@@ -64,6 +70,7 @@ Local<External> VAR = Local<External>::Cast(args[I]);
 
 using namespace v8; // NOLINT
 
+//TODO(Sannis): remove this test method or not?
 static Persistent<String> connection_async_symbol;
 
 static Persistent<String> connection_affectedRows_symbol;
@@ -76,6 +83,7 @@ static Persistent<String> connection_connectErrno_symbol;
 static Persistent<String> connection_connectError_symbol;
 static Persistent<String> connection_close_symbol;
 static Persistent<String> connection_debug_symbol;
+static Persistent<String> connection_dispatchQuery_symbol;
 static Persistent<String> connection_dumpDebugInfo_symbol;
 static Persistent<String> connection_errno_symbol;
 static Persistent<String> connection_error_symbol;
@@ -93,7 +101,6 @@ static Persistent<String> connection_multiNextResult_symbol;
 static Persistent<String> connection_multiRealQuery_symbol;
 static Persistent<String> connection_ping_symbol;
 static Persistent<String> connection_query_symbol;
-static Persistent<String> connection_queryAsync_symbol;
 static Persistent<String> connection_realQuery_symbol;
 static Persistent<String> connection_rollback_symbol;
 static Persistent<String> connection_selectDb_symbol;
@@ -107,6 +114,8 @@ static Persistent<String> connection_threadKill_symbol;
 static Persistent<String> connection_threadSafe_symbol;
 static Persistent<String> connection_useResult_symbol;
 static Persistent<String> connection_warningCount_symbol;
+
+static Persistent<String> connection_ready_event_symbol;
 
 class MysqlConn : public node::EventEmitter {
   public:
@@ -182,6 +191,20 @@ class MysqlConn : public node::EventEmitter {
     static Handle<Value> Close(const Arguments& args);
 
     static Handle<Value> Debug(const Arguments& args);
+    
+    struct query_request {
+        Persistent<Function> callback;
+        Local<Object> context_global;
+        MysqlConn *conn;
+        int result_mode;
+        int query_length;
+        char query[1];
+        MYSQL_RES *my_result;
+        uint32_t field_count;
+    };
+    static int EIO_After_DispatchQuery(eio_req *req);
+    static int EIO_DispatchQuery(eio_req *req);
+    static Handle<Value> DispatchQuery(const Arguments& args);
 
     static Handle<Value> DumpDebugInfo(const Arguments& args);
 
@@ -216,19 +239,6 @@ class MysqlConn : public node::EventEmitter {
     static Handle<Value> Ping(const Arguments& args);
 
     static Handle<Value> Query(const Arguments& args);
-
-    struct query_request {
-        Persistent<Function> callback;
-        MysqlConn *conn;
-        int result_mode;
-        int query_length;
-        char query[1];
-        MYSQL_RES *my_result;
-        uint32_t field_count;
-    };
-    static int EIO_After_Query(eio_req *req);
-    static int EIO_Query(eio_req *req);
-    static Handle<Value> QueryAsync(const Arguments& args);
 
     static Handle<Value> RealQuery(const Arguments& args);
 
