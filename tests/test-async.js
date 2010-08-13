@@ -53,11 +53,10 @@ exports.queryAsyncMany = function (test) {
   {
     random_number = Math.round(Math.random() * 1000000);
     random_boolean = (Math.random() > 0.5) ? 1 : 0;
-    sys.puts("Before #" + i);
-    j = i;
+    sys.puts("Before queryAsync #" + i);
     conn.queryAsync("INSERT INTO " + cfg.test_table +
       " (random_number, random_boolean) VALUES ('" + random_number +
-      "', '" + random_boolean + "');", function (result) {sys.puts(j);}, false);
+      "', '" + random_boolean + "');", function (result) {});
   }
 
   setTimeout( function(){
@@ -65,6 +64,6 @@ exports.queryAsyncMany = function (test) {
     test.equals(last_insert_id, irc, "conn.lastInsertId() after " + irc + " acynchronous queries");
     conn.close();
     test.done();
-  }, 1000);
+  }, 10000);
 };
 
