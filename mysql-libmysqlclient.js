@@ -4,9 +4,8 @@ Copyright (C) 2010, Oleg Efimov <efimovov@gmail.com>
 See license text in LICENSE file
 */
 
-var
-  binding = require("./mysql_bindings"),
-  sys = require("sys");
+
+var binding = require("./mysql_bindings");
   
 // libmysqlclient cannot handle multiple queries at the same time.
 // thus we must queue them internally and dispatch them as
@@ -38,31 +37,10 @@ binding.MysqlConn.prototype.queryAsync = function (query, callback, result_mode_
 exports.createConnection = function(servername, user, password, dbname, port, socket)
 {
   var db = new binding.MysqlConn();
-  
-  if (typeof socket !== "undefined") {
-    db.connect(servername, user, password, dbname, port, socket);
-  } else {
-    if (typeof port !== "undefined") {
-      db.connect(servername, user, password, dbname, port);
-    } else {
-      if (typeof dbname !== "undefined") {
-        db.connect(servername, user, password, dbname);
-      } else {
-        if (typeof password !== "undefined") {
-          db.connect(servername, user, password);
-        } else {
-          if (typeof user !== "undefined") {
-            db.connect(servername, user);
-          } else {
-            if (typeof servername !== "undefined") {
-              db.connect(servername);
-            }
-          }
-        }
-      }
-    }
+  if (arguments.length > 0) {
+    db.connect.apply(db, Array.prototype.slice.call(arguments, 0, 6));
   }
-  
+
   /*
   db.addListener("connect", function () {
     c.maybeDispatchQuery();
@@ -79,10 +57,9 @@ exports.createConnection = function(servername, user, password, dbname, port, so
   */
   
   db.addListener("ready", function () {
-    sys.puts("ready event");
+    require("sys").puts("ready event");
     db.maybeDispatchQuery();
   });
   
   return db;
 }
-

@@ -5,7 +5,7 @@ Documentation lives at http://wiki.github.com/Sannis/node-mysql-libmysqlclient/
 and http://github.com/Sannis/node-mysql-libmysqlclient/tree/master/docs/.
 The code lives at http://github.com/Sannis/node-mysql-libmysqlclient/.
 
-Tested with Node version v0.1.100
+Tested with Node version v0.1.103
 
 == Build and use
 
@@ -50,9 +50,20 @@ MIT License. See license text in file LICENSE.
 
 * Oleg Efimov
   E-mail: <efimovov@gmail.com>
+  GitHub: http://github.com/Sannis
   Site: http://sannis.ru
 
 * Robin Duckett
   E-mail: <robin.duckett@gmail.com>
   GitHub: http://github.com/robinduckett
+  
+* Dan Beam
+  E-mail: <dan@danbeam.org>
+  GitHub: http://github.com/danbeam
+  Site: http://danbeam.org
+
+* Surendra Singhi
+  E-mail: <ssinghi@kreeti.com>
+  GitHub: http://github.com/ssinghi, http://github.com/kreetitech
+  Site: http://ssinghi.kreeti.com
 
