@@ -196,7 +196,6 @@ class MysqlConn : public node::EventEmitter {
         Persistent<Function> callback;
         Local<Object> context_global;
         MysqlConn *conn;
-        int result_mode;
         int query_length;
         char query[1];
         MYSQL_RES *my_result;

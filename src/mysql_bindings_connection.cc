@@ -440,10 +440,11 @@ int MysqlConn::EIO_After_DispatchQuery(eio_req *req) {
     if (try_catch.HasCaught()) {
         node::FatalException(try_catch);
     }
+    
+    query_req->callback.Dispose();
 
 	query_req->conn->Emit(connection_ready_event_symbol, 0, NULL);
 
-    query_req->callback.Dispose();
     query_req->conn->Unref();
     free(query_req);
 
@@ -480,16 +481,7 @@ int MysqlConn::EIO_DispatchQuery(eio_req *req) {
         return 0;
     }
 
-    MYSQL_RES *my_result;
-
-    switch (query_req->result_mode) {
-        case MYSQLSYNC_STORE_RESULT:
-            my_result = mysql_store_result(conn->_conn);
-            break;
-        case MYSQLSYNC_USE_RESULT:
-            my_result = mysql_use_result(conn->_conn);
-            break;
-    }
+    MYSQL_RES *my_result = mysql_store_result(conn->_conn);
 
     if (!my_result) {
         req->result = 1;
@@ -508,7 +500,6 @@ Handle<Value> MysqlConn::DispatchQuery(const Arguments& args) {
 
     REQ_STR_ARG(0, query);
     REQ_FUN_ARG(1, callback);
-    REQ_BOOL_ARG(2, result_mode_store);
 
     MysqlConn *conn = OBJUNWRAP<MysqlConn>(args.This());
 
@@ -522,12 +513,6 @@ Handle<Value> MysqlConn::DispatchQuery(const Arguments& args) {
     if (!query_req) {
       V8::LowMemoryNotification();
       return THREXC("Could not allocate enough memory");
-    }
-
-    if (*result_mode_store) {
-    	query_req->result_mode = MYSQLSYNC_STORE_RESULT;
-    } else {
-        query_req->result_mode = MYSQLSYNC_USE_RESULT;
     }
 
     query_req->query_length = query.length();
